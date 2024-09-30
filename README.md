@@ -16,7 +16,12 @@ Microservices is an architectural style where a large application is built as a 
 
 # Core Components in Spring Boot Microservices:
 1.Config Server
-- Centralized configuration management: All configurations for services are stored centrally, so every service connects to the Config Server to retrieve its configuration.
+### Centralized configuration management: All configurations for services are stored centrally,
+### so every service connects to the Config Server to retrieve its configuration.
+
+
+
+
 - pring Cloud Config handles this. For instance, in a large-scale system, you may have multiple instances of the same service running on different ports. Without a centralized config, each instance would require manual changes making the system harder to manage.
 2.Eureka Server
 - Service Discovery: Eureka allows all your microservices to register themselves so they can discover and communicate with each other dynamically, without hardcoding URLs. The API Gateway also uses Eureka to route requests to the appropriate service.
