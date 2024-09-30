@@ -31,17 +31,17 @@ so every service connects to the Config Server to retrieve its configuration.
 
 Project Structure
 This project contains the following services:
-	1. Config Server : Centralized configuration management.
-	2. Eureka Server : Service discovery server.
-	3. API Gateway : Handles routing and integrates with Keycloak for security.
-	4. Customer Service - Connects to Eureka, retrieves configuration from the Config Server, and uses MongoDB for data.
-	5. Product Service - Connects to Eureka, retrieves configuration from the Config Server, and uses PostgreSQL for data.
-	6. Order Service - Connects to Eureka, retrieves configuration from the Config Server, and uses PostgreSQL. Communicates with Product Service via RestTemplate to check product stock 
-     and uses OpenFeign to check customer details.
-	7. Payment Service - Handles payments for orders, communicates with Order Service, and sends Kafka messages to the Notification Service.
-	8. Notification Service - Listens to Kafka for order and payment confirmations and sends notifications to the customer (via email/SMS).
-	9. Zipkin - Used for distributed tracing to monitor and visualize request paths across microservices.
-	10. Keycloak - Secures access to the microservices. Both direct service access and Gateway access are secured using Keycloak.
+1. Config Server : Centralized configuration management.
+2. Eureka Server : Service discovery server.
+3. API Gateway : Handles routing and integrates with Keycloak for security.
+4. Customer Service : Connects to Eureka, retrieves configuration from the Config Server, and uses MongoDB for data.
+5. Product Service : Connects to Eureka, retrieves configuration from the Config Server, and uses PostgreSQL for data.
+6. Order Service : Connects to Eureka, retrieves configuration from the Config Server, and uses PostgreSQL. Communicates with Product Service via RestTemplate to check product 	 
+   stock and uses OpenFeign to check customer details.
+7. Payment Service : Handles payments for orders, communicates with Order Service, and sends Kafka messages to the Notification Service.
+8. Notification Service : Listens to Kafka for order and payment confirmations and sends notifications to the customer (via email/SMS).
+9. Zipkin : Used for distributed tracing to monitor and visualize request paths across microservices.
+10. Keycloak : Secures access to the microservices. Both direct service access and Gateway access are secured using Keycloak.
 
 
 
