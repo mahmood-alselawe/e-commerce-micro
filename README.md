@@ -8,11 +8,11 @@ Microservices is an architectural style where a large application is built as a 
 
 # Key Characteristics of Microservices:
 
-1.Single Responsibility: Each service focuses on a single function or capability, making it easier to develop, test, and maintain.
-2.Independent Deployment: Each service is developed independently, allowing teams to work autonomously.
-3.Decentralized Data Management: Each service can have its own database (SQL or NoSQL), ensuring flexibility in data storage.
-4.Technology Diversity: Since services are independent, you can use multiple programming languages within the same project (e.g., Java, C#, PHP).
-5.Communication: Microservices communicate through APIs (typically RESTful) or messaging brokers like Kafka.
+- Single Responsibility: Each service focuses on a single function or capability, making it easier to develop, test, and maintain.
+- Independent Deployment: Each service is developed independently, allowing teams to work autonomously.
+- Decentralized Data Management: Each service can have its own database (SQL or NoSQL), ensuring flexibility in data storage.
+- Technology Diversity: Since services are independent, you can use multiple programming languages within the same project (e.g., Java, C#, PHP).
+- Communication: Microservices communicate through APIs (typically RESTful) or messaging brokers like Kafka.
 
 # Core Components in Spring Boot Microservices:
 1.Config Server
