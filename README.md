@@ -31,9 +31,9 @@ so every service connects to the Config Server to retrieve its configuration.
 
 Project Structure
 This project contains the following services:
-	1. Config Server - Centralized configuration management.
-	2. Eureka Server - Service discovery server.
-	3. API Gateway - Handles routing and integrates with Keycloak for security.
+	1. Config Server : Centralized configuration management.
+	2. Eureka Server : Service discovery server.
+	3. API Gateway : Handles routing and integrates with Keycloak for security.
 	4. Customer Service - Connects to Eureka, retrieves configuration from the Config Server, and uses MongoDB for data.
 	5. Product Service - Connects to Eureka, retrieves configuration from the Config Server, and uses PostgreSQL for data.
 	6. Order Service - Connects to Eureka, retrieves configuration from the Config Server, and uses PostgreSQL. Communicates with Product Service via RestTemplate to check product stock 
