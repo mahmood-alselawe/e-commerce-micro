@@ -27,6 +27,9 @@ so every service connects to the Config Server to retrieve its configuration.
 - Single Entry Point: The API Gateway acts as the single entry point for external requests to your microservices system. Rather than exposing each microservice directly, the Gateway routes requests based on URL patterns.
 - ecurity with Keycloak: The Gateway integrates with Keycloak for authentication and authorization. It ensures that users can only access services they are permitted to. By connecting with Eureka, the Gateway dynamically discovers microservices, making the system flexible and scalable.
 
+![Microservices Architecture](https://github.com/mahmood-alselawe/e-commerce-micro/blob/master/Screen%20Shot%202024-09-29%20at%2010.21.38%20PM.png)
+
+
 
 
 
