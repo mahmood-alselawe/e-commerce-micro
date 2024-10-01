@@ -440,23 +440,96 @@ NoSQL databases use flexible data models that can adapt to changes in data struc
 ## SQL (Structured Query Language)
 
 - **Definition**: SQL databases are relational databases that use structured query language for defining and manipulating data.
-- **Data Structure**: Data is organized in tables with rows and columns, and relationships between tables are maintained through foreign keys.
-- **Schema**: Requires a predefined schema, meaning the structure of the data must be defined before data can be added. Changes to the schema can be complex and may require migration.
-- **Transactions**: Supports ACID (Atomicity, Consistency, Isolation, Durability) properties, which ensure reliable transactions.
+- **Data Structure**: rows and columns
+- **Schema**: predefined schema, fixed
+- **Transactions**: Supports ACID (Atomicity(all or no think), Consistency, Isolation , Durability) properties, which ensure reliable transactions.
+- **scaling**: vertical (add more power).
+- **use case**: structured date  with clear realtions.
 - **Examples**: MySQL, PostgreSQL, Oracle, Microsoft SQL Server.
 
 ## NoSQL (Not Only SQL)
-
 - **Definition**: NoSQL databases are non-relational databases designed to handle a wide variety of data types and large volumes of data.
-- **Data Structure**: Data can be stored in various formats, including key-value pairs, documents, graphs, or wide-column stores, providing flexibility in data representation.
-- **Schema**: Schema-less or flexible schema, allowing for dynamic data structures. New fields can be added without affecting existing data.
+- **Data Structure**:  key-value pairs, documents, graphs, or wide-column stores
+- **Schema**:  flexible schema
 - **Transactions**: Typically do not fully support ACID properties; instead, they may provide eventual consistency, which allows for higher performance and availability.
+- **scaling**: horizental scaling (add more server)
+- **use case**: un-structured date or sami-structured.
 - **Examples**: MongoDB, Cassandra, Redis, Couchbase.
 
 ## Summary
 
 - SQL databases are ideal for structured data and complex queries, while NoSQL databases excel in handling unstructured data and providing scalability.
 - Choose SQL when data integrity and relationships are crucial, and opt for NoSQL when flexibility and speed are more important.
+
+# Create model for customer-service
+
+```
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Builder
+@Document
+public class Customer {
+
+    @Id
+    private String id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private Address address;
+
+}
+```
+## address class
+-  class address and Customer create it in package called model
+```
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Builder
+@Document // this use to tell spring mapping this model to Document
+public class Customer {
+
+    @Id
+    private String id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private Address address;
+//  Mapping to Database document using Spring Data MongoDB not Hibernate
+} 
+```
+
+# to connect your app wtih mongoDB and get abiltey to interact with it
+```
+package com.takarub.ecommerce.repository;
+
+import com.takarub.ecommerce.model.Customer;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface CustomerRepository extends MongoRepository<Customer, String> {
+//  @Id
+//    private String id; the type of id shoud same think in extends MongoRepository<Customer, String> 
+// here you can defin and methods to retrive and specifi data 
+}
+```
+
+
+
+
 
 
 
