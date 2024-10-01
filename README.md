@@ -431,4 +431,36 @@ spring:
 
 ```
 
+## small preif about no-sql and mongoDB
+
+NoSQL is a type of database management system (DBMS) use to handle handle and store large volumes of unstructured and semi-structured data
+Unlike traditional relational databases that use tables with pre-defined schemas to store data,
+NoSQL databases use flexible data models that can adapt to changes in data structures and are capable of scaling horizontally to handle growing amounts of data.
+
+## SQL (Structured Query Language)
+
+- **Definition**: SQL databases are relational databases that use structured query language for defining and manipulating data.
+- **Data Structure**: Data is organized in tables with rows and columns, and relationships between tables are maintained through foreign keys.
+- **Schema**: Requires a predefined schema, meaning the structure of the data must be defined before data can be added. Changes to the schema can be complex and may require migration.
+- **Transactions**: Supports ACID (Atomicity, Consistency, Isolation, Durability) properties, which ensure reliable transactions.
+- **Examples**: MySQL, PostgreSQL, Oracle, Microsoft SQL Server.
+
+## NoSQL (Not Only SQL)
+
+- **Definition**: NoSQL databases are non-relational databases designed to handle a wide variety of data types and large volumes of data.
+- **Data Structure**: Data can be stored in various formats, including key-value pairs, documents, graphs, or wide-column stores, providing flexibility in data representation.
+- **Schema**: Schema-less or flexible schema, allowing for dynamic data structures. New fields can be added without affecting existing data.
+- **Transactions**: Typically do not fully support ACID properties; instead, they may provide eventual consistency, which allows for higher performance and availability.
+- **Examples**: MongoDB, Cassandra, Redis, Couchbase.
+
+## Summary
+
+- SQL databases are ideal for structured data and complex queries, while NoSQL databases excel in handling unstructured data and providing scalability.
+- Choose SQL when data integrity and relationships are crucial, and opt for NoSQL when flexibility and speed are more important.
+
+
+
+
+
+
 
