@@ -207,5 +207,11 @@ volumes:
 ```
 after we collect all services that i need it to use in my application you sould to test it
 for example: 
-- keycloak `http://localhost:9082`
 
+- keycloak `http://localhost:9082`
+- postgresql `http://localhost:5050`
+
+
+Part 1: Project Setup (config server)
+
+1. Spring Initializer : [Spring Initializr](https://start.spring.io)
