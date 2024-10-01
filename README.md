@@ -308,8 +308,8 @@ eureka:
   instance:
     hostname: localhost
   client:
-    register-with-eureka: false
-    fetch-registry: false
+    register-with-eureka: false # you prevnt eureka to register itSelf in server 
+    fetch-registry: false # you prevnt eureka to fetch any info from itSelf to take it in  server 
     service-url:
       defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
 server:
@@ -340,8 +340,95 @@ public class DiscovryApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(DiscovryApplication.class, args);
 	}
+	// run this services see if it work or not
+	// http://localhost:8761 test if work or not 
 
 }
+```
+# Part 3: Project Setup (Cutsomer server)
+
+1. Spring Initializer : [Spring Initializr](https://start.spring.io)
+
+2. Dependency : `Config Client` , `Eureka Discovery Client` , `Lombok ` , `Spring Data MongoDB ` ,`Validation ` , `spring web`
+
+```
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.zipkin.reporter2</groupId>
+			<artifactId>zipkin-reporter-brave</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-tracing-bridge-brave</artifactId>
+		</dependency>
+	</dependencies>
+```
+3. application.yml : `Customer Setup`
+
+- step one:
+## go to config server in the directory that you create it create file . yml name should same name of services and put all config that want 
+### this path where you should to create your file ==> /main/resources/configurations/customer-service.yml
+```
+spring:
+  data:
+    mongodb:
+      username: alibou
+      password: alibou
+      host: localhost
+      port: 27017
+      authentication-database: admin
+      database: customer
+  application:
+    name: customer-services
+server:
+  port: 8090
+
+```
+
+- step two
+ in application.yml : `config Setup`
+```
+spring:
+  config:
+    import: optional:configserver:http://localhost:8888 # using url once the app is run will take configuration from config server
+  application:
+    name: customer-services # name of file should  in config server should be same think otherwise will get error
+
 ```
 
 
