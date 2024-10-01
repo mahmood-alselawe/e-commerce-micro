@@ -234,7 +234,7 @@ Part 1: Project Setup (config server)
 
 ```
 
-3. application.yml : config Setup
+3. application.yml : `config Setup`
 
 ```yaml
 server:
@@ -254,5 +254,24 @@ spring:
 # to read all configurations that belong to another services in you app
 #  and also to allow any service when it connect to config server to take His own configuration
 # in resources create folder-directory to put all other configuration for another services
+```
+
+# to enable config server works add  @EnableConfigServer
+
+```
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.config.server.EnableConfigServer;
+
+@SpringBootApplication
+@EnableConfigServer
+public class ConfigServerApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(ConfigServerApplication.class, args);
+	}
+
+}
+// after this run it and see if have any error 
 ```
 
