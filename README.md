@@ -71,8 +71,7 @@ services:
       POSTGRES_USER: alibou
       POSTGRES_PASSWORD: alibou
       PGDATA: /data/postgres # here where we want to save data 
-    volumes: # the docker  containers are stateless by design, meaning if a container stops or is deleted,
-			    # all the data inside it will be lost. Volumes provide a way to persist this data
+    volumes: # the docker  containers are stateless by design, meaning if a container stops or is deleted,# all the data inside it will be lost. Volumes provide a way to persist this data	   
       - postgres:/data/postgres
     ports:
       - "5432:5432"  # the port for services - "external_port:internal_port"
