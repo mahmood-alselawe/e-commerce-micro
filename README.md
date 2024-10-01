@@ -205,6 +205,7 @@ volumes:
   mongo:
   keycloak-and-mysql-volume:
 ```
-
-
+after we collect all services that i need it to use in my application you sould to test it
+for example: 
+- keycloak `http://localhost:9082`
 
