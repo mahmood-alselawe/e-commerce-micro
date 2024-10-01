@@ -215,3 +215,21 @@ for example:
 Part 1: Project Setup (config server)
 
 1. Spring Initializer : [Spring Initializr](https://start.spring.io)
+
+2. Dependency : `Config Server` 
+
+```
+<dependencies>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-config-server</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+```
