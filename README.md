@@ -212,7 +212,7 @@ for example:
 - postgresql `http://localhost:5050`
 
 
-Part 1: Project Setup (config server)
+# Part 1: Project Setup (config server)
 
 1. Spring Initializer : [Spring Initializr](https://start.spring.io)
 
@@ -274,4 +274,74 @@ public class ConfigServerApplication {
 }
 // after this run it and see if have any error 
 ```
+# Part 2: Project Setup (eureka server)
+
+1. Spring Initializer : [Spring Initializr](https://start.spring.io)
+
+2. Dependency : `Config Client` , `Eureka Server`
+
+```
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+``` 
+3. application.yml : `config Setup`
+
+1. step one:
+## go to config server in the directory that you create it create file . yml name should same name of services and put all config that want 
+### this path where you should to create your file ==> /main/resources/configurations/discovery-service.yml
+```
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+server:
+  port: 8761
+
+```
+2. step two:
+ in application.yml : `config Setup`
+```
+spring:
+  config:
+    import: optional:configserver:http://localhost:8888 # using url once the app is run will take configuration from config server
+  application:
+    name: discovery-service # name of file should  in config server should be same think otherwise will get error
+
+```
+# to enable eureka server works add  @EnableEurekaServer
+
+```
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
+
+@SpringBootApplication
+@EnableEurekaServer
+public class DiscovryApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(DiscovryApplication.class, args);
+	}
+
+}
+```
+
 
