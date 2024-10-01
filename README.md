@@ -219,7 +219,7 @@ Part 1: Project Setup (config server)
 2. Dependency : `Config Server` 
 
 ```
-`	<dependencies>
+	<dependencies>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-config-server</artifactId>
@@ -233,3 +233,26 @@ Part 1: Project Setup (config server)
 	</dependencies>
 
 ```
+
+3. application.yml : config Setup
+
+```yaml
+server:
+  port: 8888
+spring:
+  profiles:
+    active: native
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/configurations
+
+#classpath mean tell to spring boot you should search in resources in directory called configurations
+# to read all configurations that belong to another services in you app
+#  and also to allow any service when it connect to config server to take His own configuration
+# in resources create folder-directory to put all other configuration for another services
+```
+
