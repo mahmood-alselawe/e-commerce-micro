@@ -219,7 +219,7 @@ Part 1: Project Setup (config server)
 2. Dependency : `Config Server` 
 
 ```
-<dependencies>
+`	<dependencies>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-config-server</artifactId>
