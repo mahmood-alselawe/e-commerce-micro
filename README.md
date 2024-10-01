@@ -204,9 +204,7 @@ volumes:
   pgadmin:
   mongo:
   keycloak-and-mysql-volume:
-
-
-# Key points:
+```
 
 
 
