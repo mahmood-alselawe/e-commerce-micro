@@ -68,8 +68,8 @@ services:
     container_name: ms_pg_sql  # The name of the PostgreSQL container (ms_pg_sql).
     image: postgres # Uses the official postgres image from Docker Hub.
     environment: # here we can define any attribute that i needed it in my container
-      POSTGRES_USER: alibou
-      POSTGRES_PASSWORD: alibou
+      POSTGRES_USER: mood
+      POSTGRES_PASSWORD: mood
       PGDATA: /data/postgres # here where we want to save data 
     volumes: # the docker  containers are stateless by design, meaning if a container stops or is deleted,	   
       - postgres:/data/postgres # all the data inside it will be lost. Volumes provide a way to persist this data
@@ -110,8 +110,8 @@ services:
     volumes:
       - mongo:/data
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=alibou
-      - MONGO_INITDB_ROOT_PASSWORD=alibou
+      - MONGO_INITDB_ROOT_USERNAME=modMon
+      - MONGO_INITDB_ROOT_PASSWORD=modMon
 
   mongo-express:
     image: mongo-express
@@ -120,8 +120,8 @@ services:
     ports:
       - 8081:8081
     environment:
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=alibou
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=alibou
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=modMon
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=modMon
       - ME_CONFIG_MONGODB_SERVER=mongodb
 
   zookeeper:
