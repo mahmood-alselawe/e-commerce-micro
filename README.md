@@ -61,21 +61,24 @@ Docker Compose makes it easier to manage applications that consist of multiple c
 
 ```yaml
 version: '3.9'
-services:
-  postgresql:
-    container_name: ms_pg_sql
-    image: postgres
-    environment:
+# Defines the containers that will be part of your application.
+# Each container is defined as a "service."
+services:   
+  postgresql:        # name of service 
+    container_name: ms_pg_sql  # The name of the PostgreSQL container (ms_pg_sql).
+    image: postgres # Uses the official postgres image from Docker Hub.
+    environment: # here we can define any attribute that i needed it in my container
       POSTGRES_USER: alibou
       POSTGRES_PASSWORD: alibou
-      PGDATA: /data/postgres
-    volumes:
+      PGDATA: /data/postgres # here where we want to save data 
+    volumes: # the docker  containers are stateless by design, meaning if a container stops or is deleted,
+			    # all the data inside it will be lost. Volumes provide a way to persist this data
       - postgres:/data/postgres
     ports:
-      - "5432:5432"
-    networks:
+      - "5432:5432"  # the port for services - "external_port:internal_port"
+    networks: #Connects to the custom microservices-net network.
       - microservices-net
-    restart: unless-stopped
+    restart: unless-stopped #The container will restart if it fails, except if it was stopped manually (unless-stopped).
 
   pgadmin:
     container_name: ms_pgadmin
