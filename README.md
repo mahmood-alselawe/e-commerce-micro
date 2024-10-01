@@ -206,6 +206,7 @@ volumes:
   keycloak-and-mysql-volume:
 
 
+# Key points:
 
 
 
