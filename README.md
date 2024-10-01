@@ -44,6 +44,9 @@ This project contains the following services:
 10. Keycloak : Secures access to the microservices. Both direct service access and Gateway access are secured using Keycloak.
 
 
+# know let deep dive into this project 
+
+let statrt with ** docker-compose.yml ** file
 
 
 
