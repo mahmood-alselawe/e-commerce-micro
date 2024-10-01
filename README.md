@@ -526,9 +526,322 @@ public interface CustomerRepository extends MongoRepository<Customer, String> {
 // here you can defin and methods to retrive and specifi data 
 }
 ```
+# create services layer 
+-- why we create services layer 
+1.  Reusability Business logic often needs to be reused across different parts of the application.
+2.  Separation of Concerns  The controller is primarily responsible for handling HTTP requests 
+
+```
+package com.takarub.ecommerce.services;
+
+import com.takarub.ecommerce.dto.CustomerRequest;
+import com.takarub.ecommerce.dto.CustomerResponse;
+import com.takarub.ecommerce.exception.CustomNotFoundException;
+import com.takarub.ecommerce.model.Customer;
+import com.takarub.ecommerce.repository.CustomerRepository;
+import lombok.RequiredArgsConstructor;
+import com.takarub.ecommerce.mapper.CustomerMapper;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class CustomerServices {
+
+    private final CustomerRepository repository;
+
+    private final CustomerMapper mapper;
+
+    public String createCustomer(CustomerRequest request) {
+        var customer = repository.save(mapper.toCustomer(request));
+        return customer.getId();
+    }
+
+    public void updateCustomer(CustomerRequest request) {
+       var customer = repository.findById(request.Id())
+               .orElseThrow(()-> new CustomNotFoundException(
+                       String.format("Customer with id '%s' not found", request.Id())
+               ));
+       // this methods for checks request  is isNotBlank
+       mergerCustomer(customer,request);
+       repository.save(customer);
+
+    }
+
+    private void mergerCustomer(Customer customer, CustomerRequest request) {
+        if (StringUtils.isNotBlank(customer.getFirstName())) {
+            customer.setFirstName(request.firstName());
+        }
+        if (StringUtils.isNotBlank(customer.getLastName())) {
+            customer.setLastName(request.lastName());
+        }
+        if (StringUtils.isNotBlank(customer.getEmail())) {
+            customer.setEmail(request.email());
+        }
+        if (customer.getAddress() != null) {
+            customer.setAddress(request.address());
+        }
+    }
+
+    public List<CustomerResponse> findAll() {
+        return repository.findAll()
+                .stream()
+                .map(mapper::fromCustomer)
+                .collect(Collectors.toList());
+    }
+
+    public Boolean exist(String customerId) {
+
+        return repository.findById(customerId)
+                .isPresent(); // return true if user is exist else return false
+
+    }
+
+    public CustomerResponse findById(String customerId) {
+        return repository.findById(customerId)
+                .map(mapper::fromCustomer)
+                .orElseThrow(() -> new CustomNotFoundException(customerId));
+    }
+
+    public void deleteCustomer(String customerId) {
+        repository.deleteById(customerId);
+    }
+// 
 
 
 
+}
+
+```
+- here in return type we use CustomerResponse and ues in boy request CustomerRequest this called dto(data transfier object)
+why use to  for example by using it we can controller what want to return and what We don't want return same think for boy request
+# CustomerResponse DTO
+```
+package com.takarub.ecommerce.dto;
+
+import com.takarub.ecommerce.model.Address;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+// i use record instead because of did not to getter and setter etc...
+public record CustomerResponse(
+        String Id,
+
+        String firstName,
+
+        String lastName,
+
+        String email,
+
+        Address address
+) {
+
+
+}
+```
+# CustomerRequest DTO
+
+```
+package com.takarub.ecommerce.dto;
+
+import com.takarub.ecommerce.model.Address;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+
+public record CustomerRequest(
+        String Id,
+        @NotNull(message = "Customer first name is Required")
+        String firstName,
+        @NotNull(message = "Customer last name is Required")
+        String lastName,
+        @NotNull(message = "Customer email is Required")
+        @Email(message = "customer email is not valid email address")
+        String email,
+        Address address
+) {
+}
+```
+
+# Mapper to convert dto to model or model to dto
+-- when save model in database you specified what type of model that want save
+-- its not allow to you to save CustomerRequest in you database its not allow even if its simmiler in attrubute 
+-- so you should to convert it using mapper class 
+```
+package com.takarub.ecommerce.mapper;
+
+import com.takarub.ecommerce.dto.CustomerRequest;
+import com.takarub.ecommerce.dto.CustomerResponse;
+import com.takarub.ecommerce.model.Customer;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
+@Component
+public class CustomerMapper {
+
+
+    public Customer toCustomer(CustomerRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return Customer
+                .builder()
+                .id(request.Id())
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .address(request.address())
+                .email(request.email())
+                .build();
+    }
+
+    public CustomerResponse fromCustomer(Customer customer) {
+        return new CustomerResponse(
+                customer.getId(),
+                customer.getFirstName(),
+                customer.getLastName(),
+                customer.getEmail(),
+                customer.getAddress()
+        );
+    }
+}
+```
+
+# Handle Exception
+
+```
+package com.takarub.ecommerce.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashMap;
+
+@RestControllerAdvice
+public class GlobalExceptionHandle {
+
+    @ExceptionHandler(CustomNotFoundException.class)
+    public ResponseEntity<String> handleCustomNotFoundException(CustomNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleCustomNotFoundException(MethodArgumentNotValidException e) {
+        var errors = new HashMap<String, String>();
+        e.getBindingResult().getFieldErrors().forEach(error -> {
+            var field = ((FieldError)error).getField();
+            var errorMessage = error.getDefaultMessage();
+            errors.put(field, errorMessage);
+        });
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(errors));
+
+    }
+}
+``` 
+
+```
+package com.takarub.ecommerce.exception;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode(callSuper=true)
+@Data
+public class CustomNotFoundException extends RuntimeException {
+
+    private final String msg;
+
+}
+```
+
+```
+package com.takarub.ecommerce.exception;
+
+import java.util.Map;
+
+public record ErrorResponse(
+        Map<String,String> errors
+) {
+
+
+}
+```
+
+
+
+# Controller Layer
+
+```
+import com.takarub.ecommerce.dto.CustomerRequest;
+import com.takarub.ecommerce.dto.CustomerResponse;
+import com.takarub.ecommerce.model.Customer;
+import com.takarub.ecommerce.services.CustomerServices;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/customer")
+@RequiredArgsConstructor
+@Slf4j
+public class CustomerController {
+
+    private final CustomerServices services;
+
+
+    // first api create customer
+
+    @PostMapping
+    public ResponseEntity<String> createCustomer(@RequestBody @Valid CustomerRequest request) {
+        return ResponseEntity.ok(services.createCustomer(request));
+    }
+
+    // to update the customer
+    @PutMapping
+    public ResponseEntity<Void> updateCustomer(
+            @RequestBody @Valid CustomerRequest request) {
+        services.updateCustomer(request);
+        return ResponseEntity.accepted().build();
+
+    }
+    @GetMapping
+    public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
+        return ResponseEntity.ok(services.findAll());
+    }
+
+    @GetMapping("/exist/{customer-id}")
+    public ResponseEntity<Boolean  > existById(@PathVariable("customer-id") String customerId) {
+        return  ResponseEntity.ok(services.exist(customerId));
+    }
+
+    @GetMapping("/{customer-id}")
+    public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable("customer-id") String customerId) {
+
+        return  ResponseEntity.ok(services.findById(customerId));
+
+    }
+    @DeleteMapping("/{customer-id}")
+    public ResponseEntity<Void> deleteCustomer(@PathVariable("customer-id") String customerId) {
+        services.deleteCustomer(customerId);
+        return ResponseEntity.accepted().build();
+    }
+
+
+}
+```
 
 
 
