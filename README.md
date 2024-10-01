@@ -56,7 +56,8 @@ Docker Compose is a tool for defining and running multi-container applications
 It allows you to configure all the services, networks, and volumes that are part of the application in a single file. 
 Docker Compose makes it easier to manage applications that consist of multiple containers by defining everything in a declarative YAML format.
 
-`version: '3.9'
+`
+version: '3.9'
 services:
   postgresql:
     container_name: ms_pg_sql
@@ -197,7 +198,8 @@ volumes:
   postgres:
   pgadmin:
   mongo:
-  keycloak-and-mysql-volume:`
+  keycloak-and-mysql-volume:
+`
 
 
 
