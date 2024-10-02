@@ -931,7 +931,47 @@ in case you did not have flay way who is responseaple to create table
 - For example, it looks at the @Table annotation to find out what table name to use, and the @Id annotation to identify the primary key.
 
 
-**and to use** 
+**and to use tabel that you same process model match whth tabel and repository and services layer then controller layer** 
+
+```
+package com.takarub.ecommerce.model;
+
+import com.takarub.ecommerce.category.Category;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.math.BigDecimal;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
+@Setter
+@Entity
+@Table(name = "product") // Ensure the table name matches the database
+public class Products {
+
+    @Id
+    @GeneratedValue
+    private Integer id;
+
+    private String name;
+
+    private String description;
+
+    private double availableQuantity;
+
+    private BigDecimal price;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+}
+```
+
+
+
+
 
   
 
