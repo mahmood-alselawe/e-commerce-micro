@@ -995,10 +995,16 @@ spring:
       ddl-auto: create
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+# this configruation for spring boot , this services act like producer in kafka
+
   kafka:
     producer:
+      # where de deifne from where we  car connet to kafka
       bootstrap-servers: localhost:9092
+     
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # mean that you want to send json object not String by using JsonSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.type.mapping: orderConfirmation:com.takarub.ecommerce.kafka.dto.OrderConfirmation
@@ -1012,13 +1018,247 @@ server:
 
 application:
   config:
+ # this path of url of onther services that when need to communicating with it the port same because we use gateWay
     customer-url: http://localhost:8222/api/v1/customer
-    product-url: http://localhost:8222/api/v1/products
-    payment-url: http://localhost:8222/api/v1/payments
+    product-url: http://localhost:8222/api/v1/products 
+    payment-url: http://localhost:8222/api/v1/payments 
+
+```
+## this my model
+```
+package com.takarub.ecommerce.model;
+
+import com.takarub.ecommerce.orderline.OrderLine;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+//By using @EntityListeners(AuditingEntityListener.class),
+// you enable automatic population and updating of timestamp
+// fields when entities are created or modified.
+// This helps in keeping track of when records were created and last updated without
+// requiring manual intervention.
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Setter
+@Getter
+@Builder
+@EntityListeners(AuditingEntityListener.class)
+@Table(name = "customer_order")
+public class Order {
+
+    // its like what is represent to customer
+    // id for this order and refrence
+    // total amount how much should is bay
+    // paymentMethod way that want to pay
+    // customerId id for this customer
+    // orderLines the deteales about the product that he is requseted like quanttiy
+    //productId , productName , price ,quantity
+
+    @Id
+    @GeneratedValue
+    private Integer id;
+
+    private String reference;
+
+    private BigDecimal totalAmount;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+
+    // because i now that customer is String
+    private String customerId;
+
+    // is the relationShip between Order and Products
+    // one Order can take many products
+    @OneToMany(mappedBy = "order")
+    private List<OrderLine> orderLines;
+
+    @CreatedDate
+    @Column(updatable = false , nullable = false)
+    private LocalDateTime createdDate;
+
+    @LastModifiedDate
+    @Column(insertable = false)
+    private LocalDateTime lastModifiedDate;
+
+
+
+}
+```
+**i do all think like repository service controller layer and crud operation and exception , mapper , dto**
+
+```
+@Service
+@RequiredArgsConstructor
+public class OrderServices {
+
+    private final CustomerClient customerClient;
+
+    private final ProductClient productClient;
+
+    private final OrderRepository orderRepository;
+
+    private final OrderMapper mapper;
+
+    private final OrderLineServices orderLineServices;
+
+    private final OrderProducer orderProducer;
+
+    private final PaymentClient paymentClient;
+
+
+    public Integer createOrder(OrderRequest request) {
+
+
+        // before we create order we need a few checks
+        //1- checks if we have customer or not --> by open-feign-clients
+        // to check you need comunecate with customer-ms
+
+        var customer = this.customerClient.findCustomerById(request.customerId())
+                .orElseThrow(() -> new BusinessException
+                        ("can not create order:: No Customer exists with customer id: " + request.customerId()));
+
+        System.out.println(customer);
+
+
+        //2- purchase the products and this need to make request from product-ms
+        var purchaseProducts =this.productClient.purchaseProducts(request.products());
+
+        //3- persist order
+        var order = this.orderRepository.save(mapper.toOrder(request));
+        System.out.println(order);
+        //4-persist order-line
+        for (PurchaseRequest purchaseRequest: request.products()) {
+                orderLineServices.saveOrderLine(
+                        new OrderLineRequest(
+                                null,
+                                order.getId(),
+                                purchaseRequest.productId(),
+                                purchaseRequest.quantity()
+                        )
+                );
+
+        }
+
+        //5- toDo starts payments process
+        var paymentRequest = new PaymentRequest(
+                request.amount(),
+                request.paymentMethod(),
+                order.getId(),
+                order.getReference(),
+                customer
+        );
+        paymentClient.requestOrderPayment(paymentRequest);
+
+
+        //6- todo send order confirmation --> notification-ms (kafka)
+        orderProducer.sendOrderConfirmation(
+                new OrderConfirmation(
+                        request.reference(),
+                        request.amount(),
+                        request.paymentMethod(),
+                        customer,
+                        purchaseProducts
+                )
+        );
+
+        return order.getId();
+    }
 ```
 
 
 
+# OpenFeign Client
+
+1. customerClient.findCustomerById()
+
+Definition: OpenFeign is a declarative web service client that simplifies the process of making HTTP requests in Java applications. It allows developers to define HTTP clients using simple 
+
+interfaces and annotations, enabling easier integration with RESTful services.
+
+```
+package com.takarub.ecommerce.client;
+
+import com.takarub.ecommerce.client.confi.FeignConfig;
+import com.takarub.ecommerce.client.dto.CustomerResponse;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.Optional;
+
+@FeignClient(
+        name = "CUSTOMER-SERVICES",
+        url = "${application.config.customer-url}",
+        configuration = FeignConfig.class
+)
+public interface CustomerClient {
+
+    @GetMapping("/{customer-id}")
+    Optional<CustomerResponse> findCustomerById(@PathVariable("customer-id") String customerId);
+}
+//  url = "${application.config.customer-url}", here we are url that i put in yml file config her in this attriute you "${application.config.customer-url} with @value
+// thus url is base or the root you should to complete the path in @GetMapping("/{customer-id}") to reach to the correct edpoint
+//  CustomerResponse should be same think services Cutomer otherwise return error 
+// same think for the parameter same otherwise return error
+// and should to add anoation to entry point  @EnableFeignClients
+// and inject this class in services layer use it
+```
+
+# Rest Templete 
+```
+@Service
+@RequiredArgsConstructor
+public class ProductClient {
+
+    @Value("${application.config.product-url}")
+    private String productUrl; // this uri in orderyml
+
+    private final RestTemplate restTemplate; 
+
+    public List<PurchaseResponse> purchaseProducts(List<PurchaseRequest> requestsBody) {
+
+       HttpHeaders headers = new HttpHeaders();
+       headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+       // here id need to pass toke or any thing her you can do it
+
+       HttpEntity<List<PurchaseRequest>> requestEntity = new HttpEntity<>(requestsBody, headers);
+
+       ParameterizedTypeReference<List<PurchaseResponse>> responseType =
+               new ParameterizedTypeReference<>() {};
+
+        ResponseEntity<List<PurchaseResponse>> responseEntity =
+                restTemplate.exchange(productUrl + "/purchase",
+                        POST,
+                        requestEntity,
+                        responseType
+                );
+        if (responseEntity.getStatusCode().isError()) {
+            throw new BusinessException
+                    ("An error occurred while trying to retrieve the list of purchases: " + responseEntity.getStatusCode());
+
+        }
+        return responseEntity.getBody();
+    }
+}
+
+//step two creaet bean for RestTemplate its required otherwise return error 
+//    @Bean
+//    public RestTemplate restTemplate() {
+//        return new RestTemplate();
+//    }
+
+// 2 PurchaseResponse should same object Response in Product Service
+// 3 PurchaseRequest should same object Request in Product Service
+```
 
 
 
