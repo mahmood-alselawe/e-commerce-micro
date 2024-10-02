@@ -791,9 +791,9 @@ public record ErrorResponse(
 
 # Controller Layer
 
-## the controller layer is a crucial part of your application its responseaple It acts as an intermediary between the user interface (the client) and the business logic or service layer.
-## The Controller receives requests from the client, processes them, interacts with the service layer to execute business logic, and then returns the appropriate response
-## Handle incoming HTTP requests: The Controller maps HTTP requests to specific methods using annotations like @GetMapping, @PostMapping, etc.
+1. the controller layer is a crucial part of your application its responseaple It acts as an intermediary between the user interface (the client) and the business logic or service layer.
+2. The Controller receives requests from the client, processes them, interacts with the service layer to execute business logic, and then returns the appropriate response
+3. Handle incoming HTTP requests: The Controller maps HTTP requests to specific methods using annotations like @GetMapping, @PostMapping, etc.
 ```
 import com.takarub.ecommerce.dto.CustomerRequest;
 import com.takarub.ecommerce.dto.CustomerResponse;
