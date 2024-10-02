@@ -920,12 +920,12 @@ create sequence if not exists category_seq increment by 50;
 create sequence if not exists product_seq increment by 50;
 
 ```
-in case you did not have flay way how is responseaple to create table
+in case you did not have flay way who is responseaple to create table
 
 1. when set spring.jpa.hibernate.ddl-auto=create-drop in your yml file or properties 
 2. Spring Boot configures Hibernate to automatically manage the database schema based on your JPA entity classes when the application starts up
-3.Spring Boot scans for classes annotated with @Entity within the specified packages
-4.Hibernate, as the JPA provider, reads the entity classes discovered during the scanning process.
+3. Spring Boot scans for classes annotated with @Entity within the specified packages
+4. Hibernate, as the JPA provider, reads the entity classes discovered during the scanning process.
 5. It uses reflection to access the class annotations (like @Entity, @Table, @Id, etc.) and  determine how to map the class to a database table.
 
 - For example, it looks at the @Table annotation to find out what table name to use, and the @Id annotation to identify the primary key.
