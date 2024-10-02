@@ -345,7 +345,7 @@ public class DiscovryApplication {
 
 }
 ```
-# Part 3: Project Setup (Cutsomer server)
+# Part 3: Project Setup (Cutsomer service)
 
 1. Spring Initializer : [Spring Initializr](https://start.spring.io)
 
@@ -859,13 +859,14 @@ public class CustomerController {
 }
 ```
 
-# Part 3: Project Setup (Product server)
+# Part 3: Project Setup (Product service)
 
 
 1. Spring Initializer : [Spring Initializr](https://start.spring.io)
 
 2. Dependency : `Config Client` , `Eureka Discovery Client` , `Lombok ` , `Spring Data jpa ` ,`Validation ` , `spring web` , `Flyway Migration`.`PostgreSQL Driver`
 
+3.same process for proparites create file with same name of app . yml in config direactory in config server and put all proparites here and service 
    
 1.**Flyway**  is a tool that automatically updates and organizes changes to your database, ensuring it evolves along with your application by using simple versioned scripts.
    
@@ -968,6 +969,56 @@ public class Products {
     private Category category;
 }
 ```
+**to do** purchace product
+
+
+# Part 3: Project Setup (Order service)
+
+
+1. Spring Initializer : [Spring Initializr](https://start.spring.io)
+
+2. Dependency : `Config Client` , `Eureka Discovery Client` , `Lombok ` , `Spring Data jpa ` ,`Validation ` , `spring web` , `Flyway Migration`.`PostgreSQL Driver`,`Spring for Apache Kafka`,`openfeign`
+
+in this services i will explain  i some ideas 1- **kafka , openfeign  , rest templet , and have rest client** just another think i already explain it in up
+
+
+3. application.yml : `Order Setup` **same think with config server**
+```
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order
+    username: alibou
+    password: alibou
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: orderConfirmation:com.takarub.ecommerce.kafka.dto.OrderConfirmation
+        # we use it because the producer need inform the consumer of our topic what is the object
+        #that we are sending after we send this consumer will aware of this object can be accepted
+        # and this layer of security level from kafka we need to inform two side
+
+server:
+  port: 8070
+
+
+application:
+  config:
+    customer-url: http://localhost:8222/api/v1/customer
+    product-url: http://localhost:8222/api/v1/products
+    payment-url: http://localhost:8222/api/v1/payments
+```
+
+
+
 
 
 
