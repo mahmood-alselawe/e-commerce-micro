@@ -715,7 +715,8 @@ public class CustomerMapper {
 
 2. Global Exception Handling : If no handler for the exception is found within the controller itself, Spring will look for a class annotated with @ControllerAdvice or @RestControllerAdvice.These annotations allow centralized exception handling across the application.
 
-3.Matching the Exception : Inside these advice classes, you define methods annotated with @ExceptionHandler. Spring will match the thrown exception to the corresponding method based on the -- ------ exception type
+3.Matching the Exception : Inside these advice classes, you define methods annotated with @ExceptionHandler. Spring will match the thrown exception to the corresponding method based on the exc type
+
 4. Response Generation: When a matching method is found, the method processes the exception and returns a response (e.g., a ResponseEntity).
 
 
