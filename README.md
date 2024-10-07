@@ -1331,8 +1331,88 @@ consumer group : in Kafka is a collection of consumers that work together to rea
 
 **we use  different group id**
 
+# to implement send order confirmation --> notification-ms (kafka) 
 
-  
+1. add configuration to yml file
+```
+ kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: orderConfirmation:com.takarub.ecommerce.kafka.dto.OrderConfirmation
+        # we use it because the producer need inform the consumer of our topic what is the object
+        #that we are sending after we send this consumer will aware of this object can be accepted
+        # and this layer of security level from kafka we need to inform two side
+```
+2. create Topic
+
+```
+package com.takarub.ecommerce.config;
+
+import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.TopicBuilder;
+
+@Configuration
+public class KafkaOrderTopicConfig {
+
+    @Bean
+    public NewTopic ordersTopic() {
+        return TopicBuilder
+                .name("order-topic")
+                .build();
+    }
+
+
+}
+```
+
+3. send what you want
+
+```
+package com.takarub.ecommerce.kafka;
+
+import com.takarub.ecommerce.kafka.dto.OrderConfirmation;
+import com.takarub.ecommerce.model.Order;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class OrderProducer {
+
+    private final KafkaTemplate<String, OrderConfirmation> kafkaTemplate;
+    // here specify key(key-serializer(StringSerializer)) value(value-serializer(JsonSerializer)) 
+
+
+    public void sendOrderConfirmation(OrderConfirmation orderConfirmation) {
+                                    //orderConfirmation:com.takarub.ecommerce.kafka.dto.OrderConfirmation
+        log.info("Sending order confirmation: {}", orderConfirmation);
+        Message<OrderConfirmation> message = MessageBuilder
+                .withPayload(orderConfirmation)
+						// in first Step we create topic
+                .setHeader(KafkaHeaders.TOPIC, "order-topic")
+                .build();
+	// we template engine to send message to kafka
+        kafkaTemplate.send(message);
+    }
+}
+```
+
+order services end 
+
+
+
 
 
 
