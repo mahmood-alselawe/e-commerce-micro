@@ -1292,7 +1292,44 @@ public interface PaymentClient {
 
 ![Kafka Architecture](https://github.com/mahmood-alselawe/e-commerce-micro/blob/master/Kafkas-architecture.png)
 
+- Producser Send message to cluster(colleaction of broker) for specific topic and he can specify which partition want to send it 
+- broker : is server than handle the storage and processing  of message from producer and make them available for consumer
+- topic : is logical chanle to which producers send message and from which consumer read message
+- partition : topic split into partitions for parallelism and scalability
 
+so the broker take this message and route to topic and  **default partitioner** decides which partition the message will go to
+This decision is usually based on:
+
+- Keyed messages: If the producer provides a key, the partitioner uses a hashing algorithm to map the key to a specific partition.
+
+- No key provided: If there’s no key, Kafka typically uses a round-robin approach, distributing messages evenly across the partitions for load balancing.
+
+- for every message in partition will take for it copy callled (Replica) and this copy distributed to another broker so the original copy called leader 
+
+- and for another copy in another broker called (follwer) 
+
+finaly when consumer subscribe whit specific topic will take message from partition 
+
+- to Distinction if you take message complete with any missing part ?
+
+kafka use offset to resolve this problem 
+
+- offset : offset in Kafka is a unique identifier for each message within a partition.
+-  It represents the sequential position of a message in that partition, allowing consumers to track and retrieve messages in the correct order.
+-   Each partition has its own independent sequence of offsets.
+
+
+consumer group : in Kafka is a collection of consumers that work together to read data from a topic's partitions.
+
+- to shere workload between consumer:
+
+**should use same group id ach partition in the topic is assigned to only one consumer within the group, ensuring parallel processing and load balancing.**
+**If a consumer fails, Kafka automatically redistributes the partitions to other consumers in the group.**
+
+
+- to resive same messge for every consumer:
+
+**we use  different group id**
 
 
   
