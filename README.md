@@ -1345,6 +1345,8 @@ consumer group : in Kafka is a collection of consumers that work together to rea
         # we use it because the producer need inform the consumer of our topic what is the object
         #that we are sending after we send this consumer will aware of this object can be accepted
         # and this layer of security level from kafka we need to inform two side
+	# from notifcation
+	#spring.json.type.mapping: orderConfirmation:com.takarub.ecommerce.kafka.order.OrderConfirmation
 ```
 2. create Topic
 
@@ -1409,9 +1411,254 @@ public class OrderProducer {
 }
 ```
 
-order services end 
+# Payemnt Service 
+
+1. Spring Initializer : [Spring Initializr](https://start.spring.io)
+
+2. Dependency : `Config Client` , `Eureka Discovery Client` , `Lombok ` , `Spring Data jpa ` ,`Validation ` , `spring web` , .`PostgreSQL Driver`,`Spring for Apache Kafka`,`openfeign`
+
+in this services i will explain  i some ideas 1- **kafka**
+
+3. application.yml : `Payment Setup` **same think with config server**
 
 
+- controller layer
+
+```
+@RestController
+@RequestMapping("/api/v1/payments")
+@RequiredArgsConstructor
+public class PaymentController {
+
+    private final PaymentService paymentService;
+
+    @PostMapping
+    public ResponseEntity<Integer> createPayment(@RequestBody @Valid PaymentRequest request) {
+
+        return ResponseEntity.ok(paymentService.createPayment(request));
+    }
+
+}
+```
+
+- services layer 
+
+```
+@Service
+@RequiredArgsConstructor
+public class PaymentService {
+
+    private final PaymentRepository repository;
+
+    private final PaymentMapper mapper;
+
+    private final NotificationProducer notificationProducer;
+
+    public Integer createPayment(PaymentRequest request) {
+        var payment = repository.save(mapper.toPayment(request));
+
+        notificationProducer.sendNotification(new PaymentNotificationRequest(
+                request.orderReference(),
+                request.amount(),
+                request.paymentMethod(),
+                request.customer().firstname(),
+                request.customer().lastname(),
+                request.customer().email()
+        ));
+        return payment.getId();
+    }
+}
+```
+
+- to use kafka same step
+
+1. add configuration to yml file
+
+```
+ kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: paymentNotificationRequest:com.takarub.ecommerce.kafka.dto.PaymentNotificationRequest
+        # we use it because the producer need inform the consumer of our topic what is the object
+        #that we are sending after we send this consumer will aware of this object can be accepted
+        # and this layer of security level from kafka we need to inform two side
+        # from notifcation
+	# spring.json.type.mapping: paymentNotificationRequest:com.takarub.ecommerce.kafka.dto.PaymentNotificationRequest
+```
+2. create Topic
+```
+@Configuration
+public class KafkaPaymentTopicConfig {
+
+    @Bean
+    public NewTopic paymentTopic() {
+        return TopicBuilder
+                .name("payment-topic")
+                .build();
+    }
+}
+```
+
+3.  send what you want
+
+```
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class NotificationProducer {
+
+    private final KafkaTemplate<String, PaymentNotificationRequest> kafkaTemplate;
+
+
+    public void sendNotification(PaymentNotificationRequest paymentNotificationRequest) {
+            log.info("Sending notification request {}", paymentNotificationRequest);
+        Message<PaymentNotificationRequest> message = MessageBuilder
+                .withPayload(paymentNotificationRequest)
+                .setHeader(KafkaHeaders.TOPIC,"payment-topic")
+                .build();
+        kafkaTemplate.send(message);
+
+    }
+}
+
+```
+
+1- **spring.json.type.mapping** in both the producer and consumer must be identical in terms of the object name and the class path for Kafka to properly serialize and deserialize the message. 
+
+**Specifically**:
+
+- **Object Name (paymentNotificationRequest)**: This is the alias used to map the JSON data. It must be the same in both the producer and consumer, so Kafka knows which type to expect.
+
+- **Class Path (com.takarub.ecommerce.kafka.dto.PaymentNotificationRequest):** This fully qualified class name must match on both sides so that the consumer can correctly deserialize the message into the right Java class
+
+
+# Nodification Service 
+
+1. Spring Initializer : [Spring Initializr](https://start.spring.io)
+
+2. Dependency : `Config Client` , `Eureka Discovery Client` , `Lombok ` , `mongodb ` ,`Validation ` , `spring web` , .`mail`,`thymeleaf`,`Spring for Apache Kafka`
+
+in this services i will explain  i some ideas 1- **mail** ,**Kafka**
+
+3. application.yml : `notification Setup` **same think with config server**
+
+```
+spring:
+  data:
+    mongodb:
+      username: alibou
+      password: alibou
+      host: localhost
+      port: 27017
+      authentication-database: admin
+      database: customer
+
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: paymentGroup,orderGroup
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+        spring.json.type.mapping: orderConfirmation:com.takarub.ecommerce.kafka.order.OrderConfirmation, paymentNotificationRequest:com.takarub.ecommerce.kafka.dto.PaymentNotificationRequest
+	# same name of object and same path in producer and consumer
+
+  mail:
+    host: localhost
+    port: 1025
+    username: mood
+    password: mood
+    properties:
+      mail:
+        smtp:
+          trust: "*"
+        auth: true
+        starttls:
+          enabled: true
+        connectiontimeout: 5000
+        timeout: 3000
+        writetimeout: 5000
+
+server:
+  port: 804
+```
+
+
+
+
+```
+import static com.takarub.ecommerce.model.NotificationType.ORDER_CONFIRMATION;
+import static com.takarub.ecommerce.model.NotificationType.PAYMENT_CONFIRMATION;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+
+public class NotificationConsumer {
+
+    private final NotificationRepository repository;
+
+    private final EmailService emailService;
+
+    // private final EmailService service;
+
+    // this object should be same object from producer
+    @KafkaListener(topics = "payment-topic")
+    public void consumePaymentSuccessNotification(PaymentNotificationRequest paymentNotificationRequest) throws MessagingException {
+        log.info("Payment confirmation: {}", paymentNotificationRequest);
+        repository.save(
+                Notification
+                        .builder()
+                        .type(PAYMENT_CONFIRMATION)
+                        .notificationDate(LocalDate.now())
+                        .paymentConfirmation(paymentNotificationRequest)
+                        .build()
+        );
+
+        // todo send email
+        var customerName = paymentNotificationRequest.customerFirstName() + " " + paymentNotificationRequest.customerLastName();
+        emailService.sendEmailSuccessEmail(
+                paymentNotificationRequest.customerEmail(),
+                customerName,
+                paymentNotificationRequest.amount(),
+                paymentNotificationRequest.orderReference()
+        );
+
+
+    }
+
+    @KafkaListener(topics = "order-topic")
+    public void consumeOrderConfirmationNotification(OrderConfirmation orderConfirmation) throws MessagingException {
+       log.info("Order confirmation: {}", orderConfirmation);
+        repository.save(
+                Notification
+                        .builder()
+                        .type(ORDER_CONFIRMATION)
+                        .notificationDate(LocalDate.now())
+                        .orderConfirmation(orderConfirmation)
+                        .build()
+        );
+
+        // todo send email
+        var customerName = orderConfirmation.customer().firstname() + " " + orderConfirmation.customer().lastname();
+        emailService.sendOrderConfirmation(
+                orderConfirmation.customer().email(),
+                customerName,
+                orderConfirmation.totalAmount(),
+                orderConfirmation.orderReference(),
+                orderConfirmation.products()
+        );
+
+
+    }
+
+}
+```
 
 
 
