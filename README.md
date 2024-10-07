@@ -1260,6 +1260,37 @@ public class ProductClient {
 // 3 PurchaseRequest should same object Request in Product Service
 ```
 
+# make Request to payment services to create createPayment
+
+- paymentClient.requestOrderPayment(paymentRequest); using open FeignClient 
+
+```
+import com.takarub.ecommerce.client.dto.PaymentRequest;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+@FeignClient(
+        name = "PAYMENT-SERVICES",
+        url = "${application.config.payment-url}"
+)
+public interface PaymentClient {
+
+    @PostMapping
+    Integer requestOrderPayment(@RequestBody PaymentRequest paymentRequest);
+}
+
+```
+
+# last think in order services send orderconfirmation using kafka
+
+
+# What is Kafka?
+
+- Apache Kafka® is a distributed event streaming platform that is used for building real-time data pipelines and streaming applications.
+- Kafka is designed to handle large volumes of data in a scalable and fault-tolerant manner
+
+![Kafka Architecture](https://github.com/mahmood-alselawe/e-commerce-micro/blob/master/Kafkas-architecture.png)
 
 
 
